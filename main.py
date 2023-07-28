@@ -3,7 +3,8 @@ from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split 
 from sklearn.preprocessing import LabelEncoder 
 from sklearn.ensemble import RandomForestRegressor
-from tkinter import * 
+import tkinter as tk 
+from tkinter import messagebox
 from tkinter import ttk 
 import joblib 
 import os
@@ -74,6 +75,24 @@ def price_analysis(model, input_data, actual_price, threshold=0.30):
         return True, predicted_price
     else :
         return False, predicted_price
+    
+def validate_integer_input(input_in):
+    if input_in == "":
+        return True 
+
+    try:
+        int(input_in)
+        return True 
+    except ValueError:
+        return False 
+    
+    
+
+def validate_string_input(input_str):
+    if input_str != "" and isinstance(input_str, str):
+        return True 
+    else :
+        return False 
 
 if __name__ == "__main__":
     gta_model = train_model(home_data)
@@ -82,20 +101,90 @@ if __name__ == "__main__":
     model_file = 'trained_model.joblib'
     loaded_model = joblib.load(model_file)
 
+    def show_error_message(message:str):
+        error_window = tk.Toplevel(root)
+        error_window.title("Error")
+        error_window.geometry("300x100")
 
-    input_features = {'region': 'Toronto, ON', 'bedrooms': 6, 'bathrooms': 2} 
-    actual_price_paid = 1000000 
+        error_label = tk.Label(error_window, text=message, fg="red", font=("Arial", 15))
+        error_label.pack(pady=20)
 
-    input_data = pd.DataFrame(input_features, index=[0])
-    is_fair, fair_price = price_analysis(loaded_model, input_data, actual_price_paid)
+        ok_button = tk.Button(error_window, text="OK", command=error_window.destroy)
+        ok_button.pack()
 
-    if is_fair:
-        print("The price is fair")
-        print("predicted price is: ", fair_price)  
+    def clear_input_fields():
+        bedrooms_entry.delete(0, tk.END)
+        bathrooms_entry.delete(0, tk.END)
+        region_entry.delete(0, tk.END)
 
-    else:
-        print("The price is not fair")
-        print("predicted price is: ", fair_price) 
+    def submit_data():
+        bedrooms = bedrooms_entry.get() 
+        bathrooms = bathrooms_entry.get() 
+        region = region_entry.get() 
+
+        if bedrooms.strip() == "" or bathrooms.strip == "" or region.strip == "":
+            show_error_message("All fields are required!")
+
+        else:
+            #perform actions with data here. 
+            root.destroy() 
+
+
+    root = tk.Tk() 
+    root.title("Property Information")
+
+    #setting window size: 
+    window_width = 300
+    window_height = 200 
+
+    screen_width = root.winfo_screenwidth() 
+    screen_height = root.winfo_screenheight() 
+
+    #getting screen height and width:
+    x_position = (screen_width - window_width) // 2 
+    y_position = (screen_height - window_height) // 2 
+
+
+    # Center the labels and entry fields within the window
+    root.columnconfigure(0, weight=1)  # Column 0 will expand to fill any extra space
+    root.columnconfigure(1, weight=1)  # Column 1 will expand to fill any extra space
+    root.rowconfigure(0, weight=1)     # Row 0 will expand to fill any extra space
+    root.rowconfigure(1, weight=1)     # Row 1 will expand to fill any extra space
+    root.rowconfigure(2, weight=1) 
+
+
+    # Create and place the labels
+    bedrooms_label = tk.Label(root, text="Bedrooms")
+    bedrooms_label.grid(row=0, column=0, padx=10, pady=5)
+
+    bathrooms_label = tk.Label(root, text="Bathrooms")
+    bathrooms_label.grid(row=1, column=0, padx=10, pady=5)
+
+    region_label = tk.Label(root, text="Region")
+    region_label.grid(row=2, column=0, padx=10, pady=5)
+
+    # Create and place the entry fields
+
+    #registering the validate_integer_input with the Tk object that we have created (root)
+    validate_integer = root.register(validate_integer_input)
+    bedrooms_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"))
+    bedrooms_entry.grid(row=0, column=1, padx=10, pady=5)
+
+    bathrooms_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"))
+    bathrooms_entry.grid(row=1, column=1, padx=10, pady=5)
+
+    region_entry = tk.Entry(root, validate="key", validatecommand=(validate_string_input, "%P"))  
+    region_entry.grid(row=2, column=1, padx=10, pady=5)
+
+    # Create and place the submit button
+    submit_button = tk.Button(root, text="Submit", command=submit_data)
+    submit_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
+
+    # Start the main event loop
+    root.mainloop()
+
+
+
 
 
 
