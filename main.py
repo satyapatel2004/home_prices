@@ -4,40 +4,63 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor 
 from sklearn.preprocessing import LabelEncoder 
 from sklearn.ensemble import RandomForestRegressor
+from tkinter import * 
+from tkinter import ttk 
+import joblib 
+import os
 
+#setting up the files: 
 file_path = 'gta_market.csv' 
 home_data = pd.read_csv(file_path)
 output_file = 'output.csv'
 
+def encode(df, col:str, enc=True):
+    data = df[col]
+    label_encoder = LabelEncoder() 
+    encoded_col = label_encoder.fit_transform(data) 
+    df[col] = encoded_col
 
-#performing string encoding on the region column:
-region_data = home_data['region']
-label_encoder = LabelEncoder() 
-encoded_region = label_encoder.fit_transform(region_data)
-home_data['region'] = encoded_region 
+    if not enc:
+        decoded_col = label_encoder.inverse_transform(encoded_col)
+        df[col] = decoded_col
 
+    return df
 
-#target object is the price (what we are attempting to measure)
-y = home_data.price
-features = ['region','bedrooms','bathrooms']
+def train_model(home_data, save_model=True):
+    home_data = encode(home_data, 'region')
 
-#the features (what we are using to predict the target)
-X = home_data[features]
+    #target object is the price (what we are attempting to measure)
+    y = home_data.price
+    features = ['region','bedrooms','bathrooms']
 
-decoded_categories = label_encoder.inverse_transform(encoded_region)
+    #the features (what we are using to predict the target)
+    X = home_data[features]
 
-#splitting the data into validation and training data:
-train_X, val_X, train_y, val_y = train_test_split(X,y, test_size=0.2,random_state=1)
+    #where the model will be stored (if it exists): 
+    model_file = 'trained_model.joblib'
 
+    if save_model and os.path.exists(model_file):
+        #load the pre-existing model: 
+        model = joblib.load(model_file)
 
-#specifying model:
-gta_model = RandomForestRegressor(max_leaf_nodes=200, random_state=1)
-gta_model.fit(val_X, val_y)
+    else: 
+        #splitting the data into validation and training data:
+        train_X, val_X, train_y, val_y = train_test_split(X,y, test_size=0.2,random_state=1)
 
-def is_price_fair(model, input_data, actual_price, threshold=0.10):
-    region_data = input_data['region']
-    encoded_region = label_encoder.fit_transform(region_data)
-    input_data['region'] = encoded_region
+        #specifying model:
+        model = RandomForestRegressor(max_leaf_nodes=200, random_state=1)
+        model.fit(val_X, val_y)
+
+        if save_model:
+            #save the model to a file (using joblib): 
+            model_file = 'trained_model.joblib'
+            joblib.dump(model, model_file)
+
+    return model 
+
+def price_analysis(model, input_data, actual_price, threshold=0.30):
+
+    input_data = encode(input_data, 'region')
 
     predicted_price = model.predict(input_data)
     price_difference = abs(predicted_price - actual_price)
@@ -50,11 +73,18 @@ def is_price_fair(model, input_data, actual_price, threshold=0.10):
         return False, predicted_price
 
 if __name__ == "__main__":
+    gta_model = train_model(home_data)
+
+    #load the trained model 
+    model_file = 'trained_model.joblib'
+    loaded_model = joblib.load(model_file)
+
+
     input_features = {'region': 'Toronto, ON', 'bedrooms': 6, 'bathrooms': 2} 
     actual_price_paid = 1000000 
 
     input_data = pd.DataFrame(input_features, index=[0])
-    is_fair, fair_price = is_price_fair(gta_model, input_data, actual_price_paid)
+    is_fair, fair_price = price_analysis(loaded_model, input_data, actual_price_paid)
 
     if is_fair:
         print("The price is fair")
