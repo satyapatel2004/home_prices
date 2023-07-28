@@ -1,7 +1,6 @@
 import pandas as pd 
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split 
-from sklearn.tree import DecisionTreeRegressor 
 from sklearn.preprocessing import LabelEncoder 
 from sklearn.ensemble import RandomForestRegressor
 from tkinter import * 
@@ -14,6 +13,9 @@ file_path = 'gta_market.csv'
 home_data = pd.read_csv(file_path)
 output_file = 'output.csv'
 
+#encode(df, col, enc) will consume a pandas dataframe object, a column string, and a bool 
+#    representing whether or not the column should be encoded or decoded, and will encode or decode
+#    the column in the dataframe object. 
 def encode(df, col:str, enc=True):
     data = df[col]
     label_encoder = LabelEncoder() 
@@ -26,6 +28,7 @@ def encode(df, col:str, enc=True):
 
     return df
 
+#train_model(home_datam save_model) will train and save a model depending on the input. 
 def train_model(home_data, save_model=True):
     home_data = encode(home_data, 'region')
 
