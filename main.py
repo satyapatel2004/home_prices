@@ -134,10 +134,10 @@ if __name__ == "__main__":
 
     #setting up the window (name is root)
     root = tk.Tk() 
-    root.title("Enter Property Information:")
+    root.title("Home Price Analyser")
 
     #setting window size: 
-    root.geometry("700x400") 
+    root.geometry("600x300") 
 
     screen_width = root.winfo_screenwidth() 
     screen_height = root.winfo_screenheight() 
@@ -147,35 +147,50 @@ if __name__ == "__main__":
     root.columnconfigure(1, weight=1)  # Column 1 will expand to fill any extra space
     root.rowconfigure(0, weight=1)     # Row 0 will expand to fill any extra space
     root.rowconfigure(1, weight=1)     # Row 1 will expand to fill any extra space
-    root.rowconfigure(2, weight=1) 
+    root.rowconfigure(2, weight=1)     # so on so forth ... 
+    root.rowconfigure(3, weight=1) 
+    root.rowconfigure(4, weight=1) 
+    root.rowconfigure(4, weight=1) 
 
+    information_box = tk.Text(height = 5, wrap=tk.WORD, width = 65, font=("Monaco", 15), bg=root.cget("bg"), highlightbackground=root.cget("bg"), highlightcolor=root.cget("bg")) 
+    Information = """This application will allow you to input information about your home and determine whether or not you paid a fair price. The model is trained on data from 2022."""
+    
+    information_box.insert(tk.END, Information) 
+    information_box.grid(row = 0, column = 0, columnspan=2, padx=10) 
+    information_box.config(state=tk.DISABLED)
+    
 
     # Create and place the labels
-    bedrooms_label = tk.Label(root, text="Bedrooms", font=('Helvetica light', 26))
-    bedrooms_label.grid(row=0, column=0, padx=10, pady=5)
+    bedrooms_label = tk.Label(root, text="Bedrooms:", font=('Helvetica light', 23))
+    bedrooms_label.grid(row=1, column=0, padx=10, pady=5)
 
-    bathrooms_label = tk.Label(root, text="Bathrooms", font=('Helvetica light', 26))
-    bathrooms_label.grid(row=1, column=0, padx=10, pady=5)
+    bathrooms_label = tk.Label(root, text="Bathrooms:", font=('Helvetica light', 23))
+    bathrooms_label.grid(row=2, column=0, padx=10, pady=5)
 
-    region_label = tk.Label(root, text="Region", font=('Helvetica light', 26)) 
-    region_label.grid(row=2, column=0, padx=10, pady=5)
+    region_label = tk.Label(root, text="Region:", font=('Helvetica light', 23)) 
+    region_label.grid(row=3, column=0, padx=10, pady=5)
 
+    price_label = tk.Label(root, text="Price:", font=('Helvetica light', 23)) 
+    price_label.grid(row=4, column=0, padx=10, pady=5)
     # Create and place the entry fields
 
     #registering the validate_integer_input with the Tk object that we have created (root)
     validate_integer = root.register(validate_integer_input)
-    bedrooms_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"), font=('Helvetica light', 26), fg='gray') 
-    bedrooms_entry.grid(row=0, column=1, padx=10, pady=5)
+    bedrooms_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"), font=('Helvetica light', 23), fg='gray') 
+    bedrooms_entry.grid(row=1, column=1, padx=10, pady=5)
 
-    bathrooms_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"), font=('Helvetica light', 26))
-    bathrooms_entry.grid(row=1, column=1, padx=10, pady=5)
+    bathrooms_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"), font=('Helvetica light', 23))
+    bathrooms_entry.grid(row=2, column=1, padx=10, pady=5)
 
-    region_entry = tk.Entry(root, font=('Helvetica light', 26))  
-    region_entry.grid(row=2, column=1, padx=10, pady=5)
+    region_entry = tk.Entry(root, font=('Helvetica light', 23))  
+    region_entry.grid(row=3, column=1, padx=10, pady=5)
+
+    price_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"), font=('Helvetica light', 23), fg='gray')
+    price_entry.grid(row=4, column=1, padx=10, pady=5) 
 
     # Create and place the submit button
     submit_button = tk.Button(root, text="Submit", command=submit_data) 
-    submit_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
+    submit_button.grid(row=5, column=0, columnspan=2, padx=10, pady=5)
 
     # Start the main event loop
     root.mainloop()
