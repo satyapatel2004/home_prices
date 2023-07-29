@@ -12,26 +12,18 @@ import os
 #setting up the files: 
 file_path = 'gta_market.csv' 
 home_data = pd.read_csv(file_path)
+home_data['region'] = home_data['region'].str.split(',').str[0]
+
 output_file = 'output.csv'
 
-#encode(df, col, enc) will consume a pandas dataframe object, a column string, and a bool 
-#    representing whether or not the column should be encoded or decoded, and will encode or decode
-#    the column in the dataframe object. 
-def encode(df, col:str, enc=True):
-    data = df[col]
-    label_encoder = LabelEncoder() 
-    encoded_col = label_encoder.fit_transform(data) 
-    df[col] = encoded_col
+region_data = home_data['region'] 
+label_encoder = LabelEncoder() 
+encoded_col = label_encoder.fit_transform(region_data) 
+home_data['region'] = encoded_col
 
-    if not enc:
-        decoded_col = label_encoder.inverse_transform(encoded_col)
-        df[col] = decoded_col
-
-    return df
 
 #train_model(home_datam save_model) will train and save a model depending on the input. 
 def train_model(home_data, save_model=True):
-    home_data = encode(home_data, 'region')
 
     #target object is the price (what we are attempting to measure)
     y = home_data.price
@@ -63,9 +55,6 @@ def train_model(home_data, save_model=True):
     return model 
 
 def price_analysis(model, input_data, actual_price, threshold=0.30):
-
-    input_data = encode(input_data, 'region')
-
     predicted_price = model.predict(input_data)
     price_difference = abs(predicted_price - actual_price)
     fair_threshold = threshold * actual_price
@@ -86,7 +75,17 @@ def validate_integer_input(input_in):
     except ValueError:
         return False 
     
+
+def validate_region(region, le):
+
+    try: 
+        encoded_region = le.transform([region])[0]
+        return True
+
+    except ValueError:
+        return False 
     
+
 
 def validate_string_input(input_str):
     if input_str != "" and isinstance(input_str, str):
@@ -126,24 +125,22 @@ if __name__ == "__main__":
             show_error_message("All fields are required!")
 
         else:
-            #perform actions with data here. 
-            root.destroy() 
+            #perform actions with data here: 
+
+            if not validate_region(region, label_encoder):
+                show_error_message("Invalid Region!") 
 
 
+
+    #setting up the window (name is root)
     root = tk.Tk() 
-    root.title("Property Information")
+    root.title("Enter Property Information:")
 
     #setting window size: 
-    window_width = 300
-    window_height = 200 
+    root.geometry("700x400") 
 
     screen_width = root.winfo_screenwidth() 
     screen_height = root.winfo_screenheight() 
-
-    #getting screen height and width:
-    x_position = (screen_width - window_width) // 2 
-    y_position = (screen_height - window_height) // 2 
-
 
     # Center the labels and entry fields within the window
     root.columnconfigure(0, weight=1)  # Column 0 will expand to fill any extra space
@@ -154,30 +151,30 @@ if __name__ == "__main__":
 
 
     # Create and place the labels
-    bedrooms_label = tk.Label(root, text="Bedrooms")
+    bedrooms_label = tk.Label(root, text="Bedrooms", font=('Helvetica light', 26))
     bedrooms_label.grid(row=0, column=0, padx=10, pady=5)
 
-    bathrooms_label = tk.Label(root, text="Bathrooms")
+    bathrooms_label = tk.Label(root, text="Bathrooms", font=('Helvetica light', 26))
     bathrooms_label.grid(row=1, column=0, padx=10, pady=5)
 
-    region_label = tk.Label(root, text="Region")
+    region_label = tk.Label(root, text="Region", font=('Helvetica light', 26)) 
     region_label.grid(row=2, column=0, padx=10, pady=5)
 
     # Create and place the entry fields
 
     #registering the validate_integer_input with the Tk object that we have created (root)
     validate_integer = root.register(validate_integer_input)
-    bedrooms_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"))
+    bedrooms_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"), font=('Helvetica light', 26), fg='gray') 
     bedrooms_entry.grid(row=0, column=1, padx=10, pady=5)
 
-    bathrooms_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"))
+    bathrooms_entry = tk.Entry(root, validate="key", validatecommand=(validate_integer, "%P"), font=('Helvetica light', 26))
     bathrooms_entry.grid(row=1, column=1, padx=10, pady=5)
 
-    region_entry = tk.Entry(root, validate="key", validatecommand=(validate_string_input, "%P"))  
+    region_entry = tk.Entry(root, font=('Helvetica light', 26))  
     region_entry.grid(row=2, column=1, padx=10, pady=5)
 
     # Create and place the submit button
-    submit_button = tk.Button(root, text="Submit", command=submit_data)
+    submit_button = tk.Button(root, text="Submit", command=submit_data) 
     submit_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5)
 
     # Start the main event loop
